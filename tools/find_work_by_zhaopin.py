@@ -48,6 +48,7 @@ def login(account, password):
 def find():
     # 跳转到登陆页面
     browser.get("https://i.zhaopin.com/")
+    time.sleep(3)
     confirmed = browser.find_element_by_xpath("//div[@class='privacy-protocol-update__confirm']")
 
     if confirmed is not None:
