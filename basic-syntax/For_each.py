@@ -27,13 +27,13 @@ for key in b_dic.items():
 for key, value in b_dic.items():
     print(key, value)
 
-print '--test_list--'
+print('--test_list--')
 # 多线程可能会 出现 IndexError: no such item for Cursor instance，用迭代器
 test_list = [1, 2, 3, 4]
 for index in range(len(test_list) - 1):
-    print test_list[index]
+    print(test_list[index])
 
-print '--iter--'
+print('--iter--')
 it = iter(test_list)
 for index in range(len(test_list) - 1):
-    print next(it)
+    print(next(it))
