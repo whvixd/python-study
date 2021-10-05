@@ -23,18 +23,22 @@ print('--------------------------------------------------------')
 # 查看nc文件中变量的属性的具体信息
 print(dst.variables.keys())
 print('-------------------------latitude-------------------------------')
-print(dst.variables['latitude'])
-print(len(dst.variables['latitude']))
-print(dst.variables['latitude'][:])
+lat = dst.variables['latitude']
+print(lat)
+print(len(lat))
+print(lat[:])
 print('--------------------------longitude------------------------------')
-print(dst.variables['longitude'])
-print(dst.variables['longitude'][:])
+lon = dst.variables['longitude']
+print(lon)
+print(len(lon))
+print(lon[:])
 print('--------------------------GPP------------------------------')
 GPP = dst.variables['GPP']
 print(GPP)
+unit = GPP.units
 print('--------------------------GPP[i][j]------------------------------')
 for i in range(7200):
     for j in range(3600):
         val_ = GPP[i][j]
         if val_ != -9999 and val_ != 0:
-            print("{:},{:}:{:}".format(i, j, val_))
+            print("{:},{:}:{:}{:}".format(lon[i], lat[j], val_, unit))
