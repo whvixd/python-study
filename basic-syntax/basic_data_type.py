@@ -29,23 +29,7 @@ dir(str)
 # 查看方法的说明
 help(str.count)
 
-_list = ['a', 'b', 'c', 'd']
-
-# 扩展
-_list.append('e')
-# 添加列表
-_list.extend(['e', 'f'])
-# 指定位子插入
-_list.insert(3, 'd')
-
-# 删除指定位子，返回元素
-_list.pop(2)
-
-# [1,5) 步长为2（每隔2个取一个元素）
-# list_=[1,2,3,4,5]
-# list_[0:5,2]
-# 1,3,5
-print(_list[1:5:2])
-
-# 只删除不返回
-del _list[2]
+# x=1;y=2
+x, y = 1, 2
+# 交换值
+x, y = y, x

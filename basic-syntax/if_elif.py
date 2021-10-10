@@ -18,3 +18,6 @@ while (True):
 
     elif (input_num < num):
         print("No！小了")
+
+# 三元表达式：表达式1 if 逻辑表达式 else 表达式2
+str = 1 if 2 > 3 else 4
