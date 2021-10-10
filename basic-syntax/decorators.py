@@ -8,8 +8,10 @@ Created on 2017年11月20日
 '''
 
 
+# 传惨是函数
 def add_func(func):
     def wrapper():
+        # 执行say_hello函数
         return func("hello") + " and hello"
 
     return wrapper
@@ -17,7 +19,7 @@ def add_func(func):
 
 @add_func  # add_func函数的返回值作为参数，再后面执行函数时，可以不需传参
 def say_hello(hello):
-    return hello
+    return hello + " say"
 
 
 print(say_hello())
