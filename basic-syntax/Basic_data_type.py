@@ -16,3 +16,15 @@ age = 23
 name = "王志祥"
 print("{0}'age is {1}".format(name, age))
 print(name + " is " + str(age))  # 类型不相同的不能打印，需要强转
+
+# * 复制
+n2 = name * 2
+print(n2)
+
+# 切片
+print(name[0: 3])
+
+# 返回有哪些方法
+dir(str)
+# 查看方法的说明
+help(str.count)
