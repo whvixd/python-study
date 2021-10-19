@@ -70,7 +70,16 @@ print(z1)
 v1 = torch.tensor([[1.0, 0.1], [0.01, 0.001]], dtype=torch.float)
 z1.backward(v1)
 print(x1.grad)
+print(x1.data)
 
 # torch.no_grad() 会中断梯度追踪
 
 print(torch.ones(100))
+
+v=torch.ones(1)
+v.requires_grad_(True)
+v1=v**3
+v1=v1**3
+v1.backward()
+print(v.grad)
+v.grad.data.zero_()
