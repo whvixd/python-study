@@ -31,6 +31,20 @@ class MyTestCase(unittest.TestCase):
         y = torch.LongTensor([0, 2])  # 第一行取index=0的元素：0.1;第二行取index=2的元素：0.5
         print(y_hat.gather(1, y.view(-1, 1)))  # dim=1 行
 
+    def test_ReLU(self):
+        # -8.0 ~ 8.0 步长0.1
+        x = torch.arange(-8.0, 8.0, 0.1, requires_grad=True)
+        print(x)
+        # ReLU(x)=max(x,0)
+        y = x.relu()
+        print(y)
+        xyplot(x, y, 'relu')
+
+        # 求导
+        y.sum().backward()
+        xyplot(x, x.grad, 'grad of relu')
+
+
 
 if __name__ == '__main__':
     unittest.main()

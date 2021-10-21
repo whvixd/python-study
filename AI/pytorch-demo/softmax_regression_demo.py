@@ -76,6 +76,7 @@ def f2():
 
     print(evaluate_accuracy(test_iter, net))
     print("===================")
+    # 训练模型
     train_ch3(net, train_iter, test_iter, cross_entropy, num_epochs, batch_size, [W, b], lr)
 
     X, y = iter(test_iter).next()

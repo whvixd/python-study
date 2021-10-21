@@ -157,3 +157,13 @@ class LinearNet(nn.Module):
     def forward(self, x):  # x shape: (batch, 1, 28, 28)
         y = self.linear(x.view(x.shape[0], -1))
         return y
+
+'''
+两元函数绘图
+'''
+def xyplot(x_vals, y_vals, name):
+    set_figsize(figsize=(5, 2.5))
+    plt.plot(x_vals.detach().numpy(), y_vals.detach().numpy())
+    plt.xlabel('x') # x轴名称
+    plt.ylabel(name + '(x)') # y轴名称
+    plt.show()
