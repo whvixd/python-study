@@ -90,3 +90,7 @@ if torch.cuda.is_available():
     z = x + y
     print(z)
     print(z.to("cpu", torch.double))  # to()还可以同时更改数据类型
+
+X = torch.tensor([[1, 2, 3], [4, 5, 6]])
+print(X.sum(dim=0, keepdim=True))#dim=0行求和
+print(X.sum(dim=1, keepdim=True))#dim=1列求和
