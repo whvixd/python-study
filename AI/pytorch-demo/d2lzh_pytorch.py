@@ -37,6 +37,11 @@ def squared_loss(y_hat, y):
     return (y_hat - y.view(y_hat.size())) ** 2 / 2
 
 
+'''
+【随机梯度下降法】
+每次更新时，只对当前对应批次的被选用样本数据，进行Loss计算，一次计算一次更新。
+因为计算少，所以速度快，并且可以实现实时计算，支持动态的样本添加。
+'''
 def sgd(params, lr, batch_size):
     for param in params:
         param.data -= lr * param.grad / batch_size  # 注意这里更改param时用的param.data
@@ -118,6 +123,16 @@ def show_fashion_mnist(images, labels):
 
 num_epochs, lr = 5, 0.1
 
+'''
+损失函数的作用：
+DL中，我们通过计算损失函数，来衡量当次迭代结果对应各个关键参数权重，在实际描述问题上的有效程度。通过【损失函数的变化方向】，来获取对应关键参数权重，
+更趋近于实际结果的梯度方向。从而被我们使用来更新当前参数权重配置，以降低损失函数值，逼近最优解。这一过程被称为一次迭代过程。
+而通过多次迭代来获取最优解的过程，被称为一次训练。
+
+【优化算法】是一种更快实现权重逼近的处理办法。常用优化算法能够根据梯度方向和一些其他的关键信息，对当前权重作出更有效率的更新，
+降低训练所需要的迭代次数，同时提高模型鲁棒性。
+'''
+
 
 # 本函数已保存在d2lzh包中方便以后使用
 def train_ch3(net, train_iter, test_iter, loss, num_epochs, batch_size,
@@ -158,12 +173,20 @@ class LinearNet(nn.Module):
         y = self.linear(x.view(x.shape[0], -1))
         return y
 
+
 '''
 两元函数绘图
 '''
+
+
 def xyplot(x_vals, y_vals, name):
     set_figsize(figsize=(5, 2.5))
     plt.plot(x_vals.detach().numpy(), y_vals.detach().numpy())
-    plt.xlabel('x') # x轴名称
-    plt.ylabel(name + '(x)') # y轴名称
+    plt.xlabel('x')  # x轴名称
+    plt.ylabel(name + '(x)')  # y轴名称
     plt.show()
+
+
+
+def relu(X):
+    return torch.max(input=X, other=torch.tensor(0.0))

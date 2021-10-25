@@ -1,0 +1,1 @@
+epsilon：1e-04，exact error：8.18e-04，n=55

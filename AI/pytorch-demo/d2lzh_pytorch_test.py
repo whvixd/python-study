@@ -25,6 +25,11 @@ class MyTestCase(unittest.TestCase):
         print(x.view(-1, 3))
         self.assertEqual(True, True)  # add assertion here
 
+    def test_sum(self):
+        x=torch.tensor([[1,2,3],
+                      [4,5,6]])
+        print(x.sum())
+
     def test_gather(self):
         y_hat = torch.tensor([[0.1, 0.3, 0.6],
                               [0.3, 0.2, 0.5]])
@@ -35,7 +40,7 @@ class MyTestCase(unittest.TestCase):
         # -8.0 ~ 8.0 步长0.1
         x = torch.arange(-8.0, 8.0, 0.1, requires_grad=True)
         print(x)
-        # ReLU(x)=max(x,0)
+        # ReLU(x)=max(x,0) 值域：(0,x)
         y = x.relu()
         print(y)
         xyplot(x, y, 'relu')
@@ -43,6 +48,23 @@ class MyTestCase(unittest.TestCase):
         # 求导
         y.sum().backward()
         xyplot(x, x.grad, 'grad of relu')
+
+    def test_sigmoid(self):
+        x = torch.arange(-10, 10, 0.1, requires_grad=True)
+        # 1/(1+e**-x) 值域：(0,1)
+        y = x.sigmoid()
+        xyplot(x, y, 'sigmoid')
+
+        y.sum().backward()
+        xyplot(x, x.grad, 'grad of sigmoid')
+
+    def test_tanh(self):
+        x = torch.arange(-10, 10, 0.1, requires_grad=True)
+        # 双曲正切函数:(1-e**-2x)/(1+e**-2x)，值域：(-1,1)
+        y = x.tanh()
+        # xyplot(x, y, "tanh")
+        y.sum().backward() # y.sum() 为标量
+        xyplot(x,y,'grad of tanh')
 
 
 

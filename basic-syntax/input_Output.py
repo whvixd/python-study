@@ -31,3 +31,18 @@ while True:
         break
     print(line)
 r.close()
+
+import  re
+with open("/Users/didi/Documents/pycharm/python-study/test/sources/constants.txt", "r") as f:
+    constant_map = {}
+    while True:
+        line = f.readline()
+        if len(line) == 0:
+            break
+        if (line.startswith("name of constant") or line.startswith("-----")):
+            continue
+        str_list = re.split(' {2,}', line)
+        if(len(str_list)>1):
+            constant_map[str_list[0]] = str_list[1]
+
+    print(constant_map)
