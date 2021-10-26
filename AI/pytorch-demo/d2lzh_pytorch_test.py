@@ -1,6 +1,7 @@
 import unittest
 from d2lzh_pytorch import *
 import torch
+import numpy as np
 
 
 class MyTestCase(unittest.TestCase):
@@ -74,6 +75,9 @@ class MyTestCase(unittest.TestCase):
         print(dropout(X, 0.5))
         print(dropout(X, 1.0))
 
+    def test_normal(self):
+        print(np.random.normal(0,0.01,size=(4,2)))
+        print(nn.init.normal_(torch.empty(4, 2),mean=0,std=0.01))
 
 if __name__ == '__main__':
     unittest.main()
