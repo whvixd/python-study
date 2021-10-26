@@ -66,6 +66,13 @@ class MyTestCase(unittest.TestCase):
         y.sum().backward() # y.sum() 为标量
         xyplot(x,y,'grad of tanh')
 
+    def test_dropout(self):
+        X = torch.arange(16).view(2, 8)
+        print(X)
+        print(dropout(X, 0))
+
+        print(dropout(X, 0.5))
+        print(dropout(X, 1.0))
 
 
 if __name__ == '__main__':

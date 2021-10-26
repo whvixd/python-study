@@ -42,6 +42,8 @@ def squared_loss(y_hat, y):
 每次更新时，只对当前对应批次的被选用样本数据，进行Loss计算，一次计算一次更新。
 因为计算少，所以速度快，并且可以实现实时计算，支持动态的样本添加。
 '''
+
+
 def sgd(params, lr, batch_size):
     for param in params:
         param.data -= lr * param.grad / batch_size  # 注意这里更改param时用的param.data
@@ -187,9 +189,9 @@ def xyplot(x_vals, y_vals, name):
     plt.show()
 
 
-
 def relu(X):
     return torch.max(input=X, other=torch.tensor(0.0))
+
 
 # 本函数已保存在d2lzh_pytorch包中方便以后使用
 def semilogy(x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None,
@@ -201,3 +203,17 @@ def semilogy(x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None,
     if x2_vals and y2_vals:
         plt.semilogy(x2_vals, y2_vals, linestyle=':')
         plt.legend(legend)
+
+
+def dropout(X, drop_prob):
+    X = X.float()
+    assert 0 <= drop_prob <= 1
+    keep_prob = 1 - drop_prob
+    # 这种情况下把全部元素都丢弃
+    if keep_prob == 0:
+        return torch.zeros_like(X)
+
+    # 生产<1的矩阵，和keep_prob比较大小（广播），再生产True,False的矩阵，float()转为 1,0
+    mask = (torch.rand(X.shape) < keep_prob).float()
+
+    return mask * X / keep_prob
