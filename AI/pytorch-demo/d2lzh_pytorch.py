@@ -193,7 +193,6 @@ def relu(X):
     return torch.max(input=X, other=torch.tensor(0.0))
 
 
-# 本函数已保存在d2lzh_pytorch包中方便以后使用
 def semilogy(x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None,
              legend=None, figsize=(3.5, 2.5)):
     set_figsize(figsize)

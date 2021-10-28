@@ -27,8 +27,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(True, True)  # add assertion here
 
     def test_sum(self):
-        x=torch.tensor([[1,2,3],
-                      [4,5,6]])
+        x = torch.tensor([[1, 2, 3],
+                          [4, 5, 6]])
         print(x.sum())
 
     def test_gather(self):
@@ -64,8 +64,8 @@ class MyTestCase(unittest.TestCase):
         # 双曲正切函数:(1-e**-2x)/(1+e**-2x)，值域：(-1,1)
         y = x.tanh()
         # xyplot(x, y, "tanh")
-        y.sum().backward() # y.sum() 为标量
-        xyplot(x,y,'grad of tanh')
+        y.sum().backward()  # y.sum() 为标量
+        xyplot(x, y, 'grad of tanh')
 
     def test_dropout(self):
         X = torch.arange(16).view(2, 8)
@@ -76,8 +76,30 @@ class MyTestCase(unittest.TestCase):
         print(dropout(X, 1.0))
 
     def test_normal(self):
-        print(np.random.normal(0,0.01,size=(4,2)))
-        print(nn.init.normal_(torch.empty(4, 2),mean=0,std=0.01))
+        print(np.random.normal(0, 0.01, size=(4, 2)))
+        print(nn.init.normal_(torch.empty(4, 2), mean=0, std=0.01))
+
+    def test_MSELoss(self):
+        loss = nn.MSELoss()
+        i_ = torch.tensor([[1, 2], [2, 4]], dtype=torch.float, requires_grad=True)
+        o_ = torch.tensor([[2, 3], [4, 2]], dtype=torch.float)
+        t_ = loss(i_, o_)  # 先矩阵相减，再每个元素平方除以元素个数
+        t_.backward()
+        print(t_)
+
+    def test_mul_arg(self):
+        def get_mul_arg():
+            return 1, 2, 3  # 返回为tuple类型
+
+        def args_(a, b, c):
+            print("a:", a)
+            print("b:", b)
+            print("c:", c)
+
+        args = get_mul_arg()
+        print(type(args))
+        args_(*args)
+
 
 if __name__ == '__main__':
     unittest.main()
