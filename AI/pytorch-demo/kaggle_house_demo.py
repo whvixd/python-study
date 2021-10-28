@@ -106,5 +106,24 @@ def k_fold(k, X_train, y_train, num_epochs, lr, wd, batch_size):
 
 
 k, num_epochs, lr, weight_decay, batch_size = 5, 100, 5, 0, 64
-train_l, valid_l = k_fold(k, train_features, train_labels, num_epochs, lr, weight_decay, batch_size)
-print('%d-fold validation: avg train rmse %f, avg valid rmse %f' % (k, train_l, valid_l))
+
+
+# train_l, valid_l = k_fold(k, train_features, train_labels, num_epochs, lr, weight_decay, batch_size)
+# print('%d-fold validation: avg train rmse %f, avg valid rmse %f' % (k, train_l, valid_l))
+
+# 训练并预测房价
+def train_and_pred(train_features, test_features, train_labels, test_data,
+                   num_epochs, lr, wd, batch_size):
+    # net为线性回归
+    net = get_net(train_features.shape[1])
+    train_ls, _ = train(net, train_features, train_labels, None, None, num_epochs, lr, wd, batch_size)
+    # print("parameters:", list(net.parameters()))
+    d2l.semilogy(range(1, num_epochs + 1), train_ls, 'epochs', 'rmse')
+    print('train rmse %f' % train_ls[-1])
+    pred = net(test_features).detach().numpy()  # detach() 切断向前传播，requires_grad=false
+    test_data['SalePrice'] = pd.Series(pred.reshape(1, -1)[0])
+    submission = pd.concat([test_data["Id"], test_data['SalePrice']], axis=1)
+    submission.to_csv('../../test/sources/data/kaggle_house/submission.csv', index=False)
+
+
+train_and_pred(train_features, test_features, train_labels, test_data, num_epochs, lr, weight_decay, batch_size)
