@@ -52,3 +52,40 @@ net = SequentialClone(
 )
 print(net)
 print(net(X))
+
+'''
+ModuleList 类似于数组，顺序传入
+ModuleList仅仅是一个储存各种模块的列表，
+这些模块之间没有联系也没有顺序（所以不用保证相邻层的输入输出维度匹配），而且没有实现forward功能需要自己实现
+'''
+net = nn.ModuleList([nn.Linear(184, 256), nn.ReLU()])
+net.append(nn.Linear(256, 10))
+print(net)
+
+'''
+ModuleDict接收一个子模块的字典作为输入, 然后也可以类似字典那样进行添加访问操作
+并没有定义forward函数需要自己定义
+'''
+net = nn.ModuleDict({
+    'linear': nn.Linear(784, 256),
+    'act': nn.ReLU(),
+})
+net['output'] = nn.Linear(256, 10)  # 添加
+print(net['linear'])  # 访问
+print(net.output)
+print(net)
+# net(torch.zeros(1, 784)) # 会报NotImplementedError
+
+# named_parameters 访问所以参数
+print(type(net.named_parameters()))
+for name, param in net.named_parameters():
+    print(name, param.size())
+
+for name, param in net.named_parameters():
+    if 'weight' in name:
+        nn.init.normal_(param, mean=0, std=0.01)
+        print(name, param.data)
+
+# 正态分布初始化参数init.normal_(param, mean=0, std=0.01)
+# 用常数初始化参数init.constant_(param, val=0)
+

@@ -15,6 +15,9 @@ a_list = [1, 3, 35, 6, 4]
 for a in a_list:
     print(a)
 
+b_list=[1 for i in range(10)]
+print(b_list)
+
 # 字典的遍历，可以遍历其key和value
 b_dic = {'name': 'Tom', 'age': 22, 'score': 99}
 b_dic['a'] = 5
