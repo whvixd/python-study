@@ -30,6 +30,7 @@ class MyTestCase(unittest.TestCase):
         x = torch.tensor([[1, 2, 3],
                           [4, 5, 6]])
         print(x.sum())
+        self.assertEqual(True, True)  # add assertion here
 
     def test_gather(self):
         y_hat = torch.tensor([[0.1, 0.3, 0.6],
@@ -99,6 +100,14 @@ class MyTestCase(unittest.TestCase):
         args = get_mul_arg()
         print(type(args))
         args_(*args)
+
+    def test_backward(self):
+        x = torch.Tensor([4])
+        x.requires_grad_(True)
+        y = x ** 2
+        y.backward()
+        # y=x**2 y'=2x ,x=4 y'=8  链式法则求导
+        print(x.grad)
 
 
 if __name__ == '__main__':
