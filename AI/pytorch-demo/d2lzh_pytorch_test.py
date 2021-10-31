@@ -148,6 +148,59 @@ class MyTestCase(unittest.TestCase):
 
         # pandas处理表格，json相关数据结构
 
+    def test_corr2d(self):
+        X = torch.Tensor([[1, 2, 3],
+                          [4, 5, 6],
+                          [7, 8, 9]])
+        K = torch.Tensor([[0, 1],
+                          [2, 3]])
+
+        '''
+        y11 = x11*k11+x12*k12+x21*k21+x22*k22
+        y12 = x12*k11+x13*k12+x22*k21+x23*k22
+        y21 = x21*k11+x22*k12+x31*k21+x32*k22
+        y22 = x22*k11+x23*k12+x32*k21+x33*k22
+        '''
+        Y = corr2d(X, K)
+        print(Y)
+
+    def test_corr2d_multi_in(self):
+        X = torch.tensor([[[0, 1, 2], [3, 4, 5], [6, 7, 8]],
+                          [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
+        K = torch.tensor([[[0, 1], [2, 3]], [[1, 2], [3, 4]]])
+
+        print(corr2d_multi_in(X, K))
+
+    def test_stack(self):
+        T1 = torch.Tensor([[1, 2, 3],
+                           [4, 5, 6],
+                           [7, 8, 9]])
+
+        T2 = torch.Tensor([[10, 11, 12],
+                           [13, 14, 15],
+                           [16, 17, 18]])
+
+        print(torch.stack((T1, T2), dim=0))  # (2,3,3)
+        print(torch.stack((T1, T2), dim=1))  # (3,2,3)
+        print(torch.stack((T1, T2), dim=2))  # (3,3,2)
+
+    # https://tangshusen.me/Dive-into-DL-PyTorch/#/chapter05_CNN/5.3_channels
+    def test_corr2d_multi_in_out(self):
+        X = torch.rand(3, 3, 3)
+        K = torch.rand(2, 3, 1, 1)
+
+        Y1 = corr2d_multi_in_out_1x1(X, K)
+        Y2 = corr2d_multi_in_out(X, K)
+
+        print((Y1 - Y2).norm().item() < 1e-6)
+
+    def test_norm(self):
+        '''
+        lp-范数=||X||p = sqrt(p,x1**2+x2**2+...+xn**2) 根号p
+        :return: 求l2-范数
+        '''
+        print(torch.Tensor([[1, 3]]).norm())
+
 
 if __name__ == '__main__':
     unittest.main()

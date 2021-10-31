@@ -233,3 +233,36 @@ def evaluate_accuracy2(data_iter, net):
                 acc_sum += (net(X).argmax(dim=1) == y).float().sum().item()
         n += y.shape[0]
     return acc_sum / n
+
+
+# 二维互相关运算，X为数组，k为核数组，返回运算后数组
+def corr2d(X: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
+    h, w = K.shape
+    Y = torch.zeros((X.shape[0] - h + 1, X.shape[1] - w + 1))
+    for i in range(Y.shape[0]):
+        for j in range(Y.shape[1]):
+            Y[i, j] = (X[i:i + h, j:j + w] * K).sum()
+    return Y
+
+
+# 多个输入通道的互相关运算
+def corr2d_multi_in(X: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
+    # 每个通道上的输入和核数组互相关运算，再将每个通道的输出相加
+    res = corr2d(X[0, :, :], K[0, :, :])
+    for i in range(0, X.shape[0]):
+        res += corr2d(X[i, :, :], K[i, :, :])
+    return res
+
+
+def corr2d_multi_in_out(X, K):
+    # 对K的第0维遍历，每次同输入X做互相关计算。所有结果使用stack函数合并在一起
+    return torch.stack([corr2d_multi_in(X, k) for k in K])
+
+
+def corr2d_multi_in_out_1x1(X, K):
+    c_i, h, w = X.shape
+    c_o = K.shape[0]
+    X = X.view(c_i, h * w)
+    K = K.view(c_o, c_i)
+    Y = torch.mm(K, X)  # 全连接层的矩阵乘法
+    return Y.view(c_o, h, w)
