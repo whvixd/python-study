@@ -382,6 +382,64 @@ class MyTestCase(unittest.TestCase):
         optimizer = torch.optim.Adam(net.parameters(), lr=lr)
         train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
 
+    def test_BatchNorm(self):
+        from net_demo import BatchNorm
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        net = nn.Sequential(
+            nn.Conv2d(1, 6, 5),  # in_channels, out_channels, kernel_size
+            BatchNorm(6, num_dims=4),
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),  # kernel_size, stride
+            nn.Conv2d(6, 16, 5),
+            BatchNorm(16, num_dims=4),
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),
+            FlattenLayer(),
+            nn.Linear(16 * 4 * 4, 120),
+            BatchNorm(120, num_dims=2),
+            nn.Sigmoid(),
+            nn.Linear(120, 84),
+            BatchNorm(84, num_dims=2),
+            nn.Sigmoid(),
+            nn.Linear(84, 10)
+        )
+        batch_size = 256
+        train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size)
+
+        lr, num_epochs = 0.001, 5
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+        # 最后我们查看第一个批量归一化层学习到的拉伸参数gamma和偏移参数beta
+        net[1].gamma.view((-1,)), net[1].beta.view((-1,))
+
+    def test_torch_BatchNorm(self):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        net = nn.Sequential(
+            nn.Conv2d(1, 6, 5),  # in_channels, out_channels, kernel_size
+            nn.BatchNorm2d(6),  # 用于卷积层 num_features
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),  # kernel_size, stride
+            nn.Conv2d(6, 16, 5),
+            nn.BatchNorm2d(16),
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),
+            FlattenLayer(),
+            nn.Linear(16 * 4 * 4, 120),
+            nn.BatchNorm1d(120), # # 用于全连接层 num_features
+            nn.Sigmoid(),
+            nn.Linear(120, 84),
+            nn.BatchNorm1d(84),
+            nn.Sigmoid(),
+            nn.Linear(84, 10)
+        )
+        batch_size = 256
+        train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size)
+
+        lr, num_epochs = 0.001, 5
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
 
 if __name__ == '__main__':
     unittest.main()

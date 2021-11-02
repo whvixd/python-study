@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from collections import OrderedDict
 import torch.nn.functional as F
+import d2lzh_pytorch as d2l
 
 
 # 自定义多层感知机
@@ -103,6 +104,7 @@ class AlexNet(nn.Module):
         output = self.fc(feature.view(img.shape[0], -1))
         return output
 
+
 # https://tangshusen.me/Dive-into-DL-PyTorch/#/chapter05_CNN/5.9_googlenet
 class Inception(nn.Module):
     def __init__(self, in_c, c1, c2, c3, c4):
@@ -126,3 +128,33 @@ class Inception(nn.Module):
         p4 = F.relu(self.p4_2(self.p4_1(x)))
         # 在通道维上连接输出
         return torch.cat((p1, p2, p3, p4), dim=1)
+
+
+class BatchNorm(nn.Module):
+    def __init__(self, num_features, num_dims):
+        '''
+        批量归一化层
+        :param num_features: 对于全连接层来说应为输出个数，对于卷积层来说则为输出通道数
+        :param num_dims:对于全连接层和卷积层来说分别为2和4
+        '''
+        super(BatchNorm, self).__init__()
+        if num_dims == 2:
+            shape = (1, num_features)
+        else:
+            shape = (1, num_features, 1, 1)
+
+        self.gamma = nn.Parameter(torch.ones(shape))
+        self.beta = nn.Parameter(torch.zeros(shape))
+        # 不需要求梯度的，初始化0
+        self.moving_mean = torch.zeros(shape)
+        self.moving_var = torch.zeros(shape)
+
+    def forward(self, X):
+        # 如果X不在内存上，将moving_mean和moving_var复制到X所在显存上
+        if self.moving_mean.device != X.device:
+            self.moving_mean = self.moving_mean.to(X.device)
+            self.moving_var = self.moving_var.to(X.device)
+        Y, self.moving_mean, self.moving_var = d2l.batch_norm(self.training,
+                                                              X, self.gamma, self.beta, self.moving_mean,
+                                                              self.moving_var, eps=1e-5, momentum=0.9)
+        return Y
