@@ -8,6 +8,7 @@ from torch import nn
 import sys
 import torchvision.transforms as transforms
 import torchvision
+import torch.nn.functional as F
 
 
 def use_svg_display():
@@ -373,3 +374,20 @@ def vgg(conv_arch, fc_features, fc_hidden_units=4096):
         nn.Linear(fc_hidden_units, 10)
     ))
     return net
+
+
+def nin_block(in_channels, out_channels, kernel_size, stride, padding):
+    return nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding),
+                         nn.ReLU(),
+                         nn.Conv2d(out_channels, out_channels, kernel_size=1),
+                         nn.ReLU(),
+                         nn.Conv2d(out_channels, out_channels, kernel_size=1),
+                         nn.ReLU())
+
+
+class GlobalAvgPool2d(nn.Module):
+    def __init__(self):
+        super(GlobalAvgPool2d, self).__init__()
+
+    def forward(self, x):
+        return F.avg_pool2d(x, kernel_size=x.size()[2:])
