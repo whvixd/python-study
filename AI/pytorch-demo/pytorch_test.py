@@ -382,6 +382,7 @@ class MyTestCase(unittest.TestCase):
         optimizer = torch.optim.Adam(net.parameters(), lr=lr)
         train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
 
+    # https://tangshusen.me/Dive-into-DL-PyTorch/#/chapter05_CNN/5.10_batch-norm
     def test_BatchNorm(self):
         from net_demo import BatchNorm
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
