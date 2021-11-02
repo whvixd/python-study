@@ -298,6 +298,9 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
     for epoch in range(num_epochs):
         train_l_sum, train_acc_sum, n, batch_count, start = 0.0, 0.0, 0, 0, time.time()
         for X, y in train_iter:
+            # print("training...start,epoch:", epoch)
+            # print("X.shape: ", X.shape)
+            # print("y.shape: ", y.shape)
             X = X.to(device)
             y = y.to(device)
             y_hat = net(X)
@@ -309,6 +312,7 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
             train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
             n += y.shape[0]
             batch_count += 1
+            # print("training...end,epoch:", epoch)
         test_acc = evaluate_accuracy(test_iter, net)
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
               % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
@@ -316,6 +320,8 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
 
 def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNIST'):
     """Download the fashion mnist dataset and then load into memory."""
+    start = time.time()
+    print("load_data_fashion_mnist start")
     trans = []
     if resize:
         trans.append(torchvision.transforms.Resize(size=resize))
@@ -327,5 +333,43 @@ def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNI
 
     train_iter = torch.utils.data.DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=4)
     test_iter = torch.utils.data.DataLoader(mnist_test, batch_size=batch_size, shuffle=False, num_workers=4)
-
+    print("load_data_fashion_mnist end,time:", time.time() - start)
     return train_iter, test_iter
+
+
+def vgg_block(num_convs, in_channels, out_channels):
+    blk = []
+    for i in range(num_convs):
+        if i == 0:
+            blk.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
+        else:
+            blk.append(nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1))
+        blk.append(nn.ReLU())
+    blk.append(nn.MaxPool2d(kernel_size=2, stride=2))
+    return nn.Sequential(*blk)
+
+
+def vgg(conv_arch, fc_features, fc_hidden_units=4096):
+    '''
+    这个网络使用了8个卷积层和3个全连接层
+    https://tangshusen.me/Dive-into-DL-PyTorch/#/chapter05_CNN/5.7_vgg
+    :param conv_arch:
+    :param fc_features:
+    :param fc_hidden_units:
+    :return:
+    '''
+    net = nn.Sequential()
+    for i, (num_convs, in_channels, out_channels) in enumerate(conv_arch):
+        net.add_module("vgg_block_" + str(i + 1), vgg_block(num_convs, in_channels, out_channels))
+
+    net.add_module("fc", nn.Sequential(
+        FlattenLayer(),
+        nn.Linear(fc_features, fc_hidden_units),
+        nn.ReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(fc_hidden_units, fc_hidden_units),
+        nn.ReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(fc_hidden_units, 10)
+    ))
+    return net
