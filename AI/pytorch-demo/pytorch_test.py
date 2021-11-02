@@ -201,6 +201,87 @@ class MyTestCase(unittest.TestCase):
         '''
         print(torch.Tensor([[1, 3]]).norm())
 
+    def test_MLP(self):
+        from net_demo import MLP
+        X = torch.randn(2, 784)
+
+        net = MLP()
+        print(net)
+        print(net(X))
+
+    def test_sequential(self):
+        from net_demo import SequentialClone
+        X = torch.randn(2, 784)
+        net = SequentialClone(
+            nn.Linear(784, 256),
+            nn.ReLU(),
+            nn.Linear(256, 10)
+        )
+        print(net)
+        print(net(X))
+
+        '''
+        ModuleList 类似于数组，顺序传入
+        ModuleList仅仅是一个储存各种模块的列表，
+        这些模块之间没有联系也没有顺序（所以不用保证相邻层的输入输出维度匹配），而且没有实现forward功能需要自己实现
+        '''
+        net = nn.ModuleList([nn.Linear(184, 256), nn.ReLU()])
+        net.append(nn.Linear(256, 10))
+        print(net)
+
+        '''
+        ModuleDict接收一个子模块的字典作为输入, 然后也可以类似字典那样进行添加访问操作
+        并没有定义forward函数需要自己定义
+        '''
+        net = nn.ModuleDict({
+            'linear': nn.Linear(784, 256),
+            'act': nn.ReLU(),
+        })
+        net['output'] = nn.Linear(256, 10)  # 添加
+        print(net['linear'])  # 访问
+        print(net.output)
+        print(net)
+        # net(torch.zeros(1, 784)) # 会报NotImplementedError
+
+        # named_parameters 访问所以参数
+        print(type(net.named_parameters()))
+        for name, param in net.named_parameters():
+            print(name, param.size())
+
+        for name, param in net.named_parameters():
+            if 'weight' in name:
+                nn.init.normal_(param, mean=0, std=0.01)
+                print(name, param.data)
+
+        # 正态分布初始化参数init.normal_(param, mean=0, std=0.01)
+        # 用常数初始化参数init.constant_(param, val=0)
+
+    def test_LeNet(self):
+        from net_demo import LeNet
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        net = LeNet()
+        print(net)
+
+        batch_size = 256
+        train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size)
+
+        lr, num_epochs = 0.001, 5
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
+    def test_AlexNet(self):
+        from net_demo import AlexNet
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        net = AlexNet()
+        print(net)
+        batch_size = 128
+        # 如出现“out of memory”的报错信息，可减小batch_size或resize
+        train_iter, test_iter = load_data_fashion_mnist(batch_size, resize=224)
+        # 训练
+        lr, num_epochs = 0.001, 5
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
 
 if __name__ == '__main__':
     unittest.main()

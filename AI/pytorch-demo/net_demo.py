@@ -19,14 +19,6 @@ class MLP(nn.Module):
         return self.output(h)
 
 
-X = torch.randn(2, 784)
-
-
-# net = MLP()
-# print(net)
-# print(net(X))
-
-
 class SequentialClone(nn.Module):
 
     def __init__(self, *args):
@@ -45,47 +37,67 @@ class SequentialClone(nn.Module):
         return input
 
 
-net = SequentialClone(
-    nn.Linear(784, 256),
-    nn.ReLU(),
-    nn.Linear(256, 10)
-)
-print(net)
-print(net(X))
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+        # 卷积层
+        self.conv = nn.Sequential(
+            nn.Conv2d(1, 6, 5),  # in_channels, out_channels, kernel_size
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),  # kernel_size, stride
+            nn.Conv2d(6, 16, 5),
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2)
+        )
+        # 全连接层
+        self.fc = nn.Sequential(
+            nn.Linear(16 * 4 * 4, 120),
+            nn.Sigmoid(),
+            nn.Linear(120, 84),
+            nn.Sigmoid(),
+            nn.Linear(84, 10)
+        )
 
-'''
-ModuleList 类似于数组，顺序传入
-ModuleList仅仅是一个储存各种模块的列表，
-这些模块之间没有联系也没有顺序（所以不用保证相邻层的输入输出维度匹配），而且没有实现forward功能需要自己实现
-'''
-net = nn.ModuleList([nn.Linear(184, 256), nn.ReLU()])
-net.append(nn.Linear(256, 10))
-print(net)
+    def forward(self, img):
+        feature = self.conv(img)
+        output = self.fc(feature.view(img.shape[0], -1))
+        return output
 
-'''
-ModuleDict接收一个子模块的字典作为输入, 然后也可以类似字典那样进行添加访问操作
-并没有定义forward函数需要自己定义
-'''
-net = nn.ModuleDict({
-    'linear': nn.Linear(784, 256),
-    'act': nn.ReLU(),
-})
-net['output'] = nn.Linear(256, 10)  # 添加
-print(net['linear'])  # 访问
-print(net.output)
-print(net)
-# net(torch.zeros(1, 784)) # 会报NotImplementedError
 
-# named_parameters 访问所以参数
-print(type(net.named_parameters()))
-for name, param in net.named_parameters():
-    print(name, param.size())
+class AlexNet(nn.Module):
+    def __init__(self):
+        super(AlexNet, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(1, 96, 11, 4),  # in_channels, out_channels, kernel_size, stride, padding
+            nn.ReLU(),
+            nn.MaxPool2d(3, 2),  # kernel_size, stride
+            # 减小卷积窗口，使用填充为2来使得输入与输出的高和宽一致，且增大输出通道数
+            nn.Conv2d(96, 256, 5, 1, 2),
+            nn.ReLU(),
+            nn.MaxPool2d(3, 2),
+            # 连续3个卷积层，且使用更小的卷积窗口。除了最后的卷积层外，进一步增大了输出通道数。
+            # 前两个卷积层后不使用池化层来减小输入的高和宽
+            nn.Conv2d(256, 384, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(384, 384, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(384, 256, 3, 1, 1),
+            nn.ReLU(),
+            nn.MaxPool2d(3, 2)
+        )
+        # 这里全连接层的输出个数比LeNet中的大数倍。使用丢弃层来缓解过拟合
+        self.fc = nn.Sequential(
+            nn.Linear(256 * 5 * 5, 4096),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(4096, 4096),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            # 输出层。由于这里使用Fashion-MNIST，所以用类别数为10，而非论文中的1000
+            nn.Linear(4096, 10),
+        )
 
-for name, param in net.named_parameters():
-    if 'weight' in name:
-        nn.init.normal_(param, mean=0, std=0.01)
-        print(name, param.data)
-
-# 正态分布初始化参数init.normal_(param, mean=0, std=0.01)
-# 用常数初始化参数init.constant_(param, val=0)
-
+    def forward(self, img):
+        feature = self.conv(img)
+        output = self.fc(feature.view(img.shape[0], -1))
+        return output
