@@ -427,7 +427,7 @@ class MyTestCase(unittest.TestCase):
             nn.MaxPool2d(2, 2),
             FlattenLayer(),
             nn.Linear(16 * 4 * 4, 120),
-            nn.BatchNorm1d(120), # # 用于全连接层 num_features
+            nn.BatchNorm1d(120),  # # 用于全连接层 num_features
             nn.Sigmoid(),
             nn.Linear(120, 84),
             nn.BatchNorm1d(84),
@@ -436,6 +436,35 @@ class MyTestCase(unittest.TestCase):
         )
         batch_size = 256
         train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size)
+
+        lr, num_epochs = 0.001, 5
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
+    def test_Residual(self):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        net = nn.Sequential(
+            nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+
+        net.add_module("resnet_block1", resnet_block(64, 64, 2, first_block=True))
+        net.add_module("resnet_block2", resnet_block(64, 128, 2))
+        net.add_module("resnet_block3", resnet_block(128, 256, 2))
+        net.add_module("resnet_block4", resnet_block(256, 512, 2))
+
+        net.add_module("global_avg_pool", GlobalAvgPool2d())  # GlobalAvgPool2d的输出: (Batch, 512, 1, 1)
+        net.add_module("fc", nn.Sequential(FlattenLayer(), nn.Linear(512, 10)))
+
+        X = torch.rand((1, 1, 224, 224))
+        for name, layer in net.named_children():
+            X = layer(X)
+            print(name, ' output shape:\t', X.shape)
+
+        batch_size = 256
+        # 如出现“out of memory”的报错信息，可减小batch_size或resize
+        train_iter, test_iter = load_data_fashion_mnist(batch_size, resize=96)
 
         lr, num_epochs = 0.001, 5
         optimizer = torch.optim.Adam(net.parameters(), lr=lr)

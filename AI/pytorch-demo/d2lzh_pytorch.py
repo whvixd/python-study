@@ -415,3 +415,16 @@ def batch_norm(is_training, X, gamma, beta, moving_mean, moving_var, eps, moment
     # 拉伸和偏移
     Y = gamma * X_hat + beta
     return Y, moving_mean, moving_var
+
+# 残差块
+def resnet_block(in_channels, out_channels, num_residuals, first_block=False):
+    from net_demo import Residual
+    if first_block:
+        assert in_channels == out_channels  # 第一个模块的通道数同输入通道数一致
+    blk = []
+    for i in range(num_residuals):
+        if i == 0 and not first_block:
+            blk.append(Residual(in_channels, out_channels, use_1x1conv=True, stride=2))
+        else:
+            blk.append(Residual(out_channels, out_channels))
+    return nn.Sequential(*blk)
