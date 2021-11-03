@@ -5,6 +5,24 @@ import torch.nn.functional as F
 import d2lzh_pytorch as d2l
 
 
+class Conv2D(nn.Module):
+    def __init__(self, kernel_size):
+        super(Conv2D, self).__init__()
+        self.weight = nn.Parameter(torch.randn(kernel_size))
+        self.bias = nn.Parameter(torch.randn(1))
+
+    def forward(self, x):
+        return d2l.corr2d(x, self.weight) + self.bias
+
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+
+    def forward(self, x):  # x shape: (batch, *, *, ...)
+        return x.view(x.shape[0], -1)
+
+
 # 自定义多层感知机
 class MLP(nn.Module):
 
@@ -179,4 +197,3 @@ class Residual(nn.Module):
         if self.conv3:
             X = self.conv3(X)
         return F.relu(Y + X)
-
