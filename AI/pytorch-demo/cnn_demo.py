@@ -100,3 +100,13 @@ def conv_block(in_channels, out_channels):
                         nn.ReLU(),
                         nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
     return blk
+
+
+# 过渡块
+def transition_block(in_channels, out_channels):
+    blk = nn.Sequential(
+        nn.BatchNorm2d(in_channels),
+        nn.ReLU(),
+        nn.Conv2d(in_channels, out_channels, kernel_size=1),
+        nn.AvgPool2d(kernel_size=2, stride=2))
+    return blk

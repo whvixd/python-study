@@ -3,6 +3,7 @@ from torch import nn
 from collections import OrderedDict
 import torch.nn.functional as F
 import d2lzh_pytorch as d2l
+import cnn_demo as cnn
 
 
 class Conv2D(nn.Module):
@@ -197,3 +198,21 @@ class Residual(nn.Module):
         if self.conv3:
             X = self.conv3(X)
         return F.relu(Y + X)
+
+
+# 稠密层：https://tangshusen.me/Dive-into-DL-PyTorch/#/chapter05_CNN/5.12_densenet
+class DenseBlock(nn.Module):
+    def __init__(self, num_convs, in_channels, out_channels):
+        super(DenseBlock, self).__init__()
+        net = []
+        for i in range(num_convs):
+            in_c = in_channels + i * out_channels
+            net.append(cnn.conv_block(in_c, out_channels))
+        self.net = nn.ModuleList(net)
+        self.out_channels = in_channels + num_convs * out_channels  # 计算输出通道数
+
+    def forward(self, X):
+        for blk in self.net:
+            Y = blk(X)
+            X = torch.cat((X, Y), dim=1)  # 在通道维上将输入和输出连结
+        return X
