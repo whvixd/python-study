@@ -1,4 +1,5 @@
 import time
+import zipfile
 
 from IPython import display
 from matplotlib import pyplot as plt
@@ -352,3 +353,16 @@ def data_iter_random(corpus_indices, batch_size, num_steps, device=None):
         X = [_data(j * num_steps) for j in batch_indices]
         Y = [_data(j * num_steps + 1) for j in batch_indices]
         yield torch.tensor(X, dtype=torch.float32, device=device), torch.tensor(Y, dtype=torch.float32, device=device)
+
+
+def load_data_jay_lyrics():
+    with zipfile.ZipFile('../../test/sources/data/jaychou_lyrics.txt.zip') as zin:
+        with zin.open('jaychou_lyrics.txt') as f:
+            corpus_chars = f.read().decode('utf-8')
+    corpus_chars = corpus_chars.replace('\n', ' ').replace('\r', ' ')
+    idx_to_char = list(set(corpus_chars))
+    char_to_idx = dict([(char, i) for i, char in enumerate(idx_to_char)])
+    vocab_size = len(char_to_idx)
+    corpus_indices = [char_to_idx[char] for char in corpus_chars]
+    return corpus_indices, char_to_idx, idx_to_char, vocab_size
+
