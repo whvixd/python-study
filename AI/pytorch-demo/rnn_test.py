@@ -25,6 +25,10 @@ class MyTestCase(unittest.TestCase):
         outputs, state_new = rnn(inputs, state, params)
         print(len(outputs), outputs[0].shape, state_new[0].shape)
 
+        predict_res = predict_rnn('分开', 10, rnn, params, init_rnn_state, num_hiddens, vocab_size,
+                                  device, idx_to_char, char_to_idx)
+        print(predict_res)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -47,3 +47,20 @@ def rnn(inputs, state, params):
         Y = torch.matmul(H, W_hq) + b_q
         outputs.append(Y)
     return outputs, (H,)
+
+# 本函数已保存在d2lzh_pytorch包中方便以后使用
+def predict_rnn(prefix, num_chars, rnn, params, init_rnn_state,
+                num_hiddens, vocab_size, device, idx_to_char, char_to_idx):
+    state = init_rnn_state(1, num_hiddens, device)
+    output = [char_to_idx[prefix[0]]]
+    for t in range(num_chars + len(prefix) - 1):
+        # 将上一时间步的输出作为当前时间步的输入
+        X = to_onehot(torch.tensor([[output[-1]]], device=device), vocab_size)
+        # 计算输出和更新隐藏状态
+        (Y, state) = rnn(X, state, params)
+        # 下一个时间步的输入是prefix里的字符或者当前的最佳预测字符
+        if t < len(prefix) - 1:
+            output.append(char_to_idx[prefix[t + 1]])
+        else:
+            output.append(int(Y[0].argmax(dim=1).item()))
+    return ''.join([idx_to_char[i] for i in output])
