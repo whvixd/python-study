@@ -85,7 +85,6 @@ def evaluate_accuracy(data_iter, net):
     return acc_sum / n
 
 
-
 def load_data_fashion_mnist(batch_size):
     mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
                                                     transform=transforms.ToTensor())
@@ -331,4 +330,25 @@ def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNI
     return train_iter, test_iter
 
 
+# 本函数已保存在d2lzh_pytorch包中方便以后使用
+def data_iter_random(corpus_indices, batch_size, num_steps, device=None):
+    # 减1是因为输出的索引x是相应输入的索引y加1
+    num_examples = (len(corpus_indices) - 1) // num_steps
+    epoch_size = num_examples // batch_size
+    example_indices = list(range(num_examples))
+    random.shuffle(example_indices)
 
+    # 返回从pos开始的长为num_steps的序列
+    def _data(pos):
+        return corpus_indices[pos: pos + num_steps]
+
+    if device is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    for i in range(epoch_size):
+        # 每次读取batch_size个随机样本
+        i = i * batch_size
+        batch_indices = example_indices[i: i + batch_size]
+        X = [_data(j * num_steps) for j in batch_indices]
+        Y = [_data(j * num_steps + 1) for j in batch_indices]
+        yield torch.tensor(X, dtype=torch.float32, device=device), torch.tensor(Y, dtype=torch.float32, device=device)

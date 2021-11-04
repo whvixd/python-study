@@ -2,6 +2,8 @@ import unittest
 from d2lzh_pytorch import *
 import torch
 import numpy as np
+import random
+import zipfile
 
 
 class MyTestCase(unittest.TestCase):
@@ -255,6 +257,12 @@ class MyTestCase(unittest.TestCase):
 
         # 正态分布初始化参数init.normal_(param, mean=0, std=0.01)
         # 用常数初始化参数init.constant_(param, val=0)
+
+    def test_zip(self):
+        with zipfile.ZipFile('../../test/sources/data/jaychou_lyrics.txt.zip') as zin:
+            with zin.open('jaychou_lyrics.txt') as f:
+                corpus_chars = f.read().decode('utf-8')
+        print(corpus_chars[:40])
 
 
 if __name__ == '__main__':
