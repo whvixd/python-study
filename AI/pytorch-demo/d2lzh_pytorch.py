@@ -355,6 +355,21 @@ def data_iter_random(corpus_indices, batch_size, num_steps, device=None):
         yield torch.tensor(X, dtype=torch.float32, device=device), torch.tensor(Y, dtype=torch.float32, device=device)
 
 
+def data_iter_consecutive(corpus_indices, batch_size, num_steps, device=None):
+    if device is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    corpus_indices = torch.tensor(corpus_indices, dtype=torch.float32, device=device)
+    data_len = len(corpus_indices)
+    batch_len = data_len // batch_size
+    indices = corpus_indices[0: batch_size * batch_len].view(batch_size, batch_len)
+    epoch_size = (batch_len - 1) // num_steps
+    for i in range(epoch_size):
+        i = i * num_steps
+        X = indices[:, i: i + num_steps]
+        Y = indices[:, i + 1: i + num_steps + 1]
+        yield X, Y
+
+
 def load_data_jay_lyrics():
     with zipfile.ZipFile('../../test/sources/data/jaychou_lyrics.txt.zip') as zin:
         with zin.open('jaychou_lyrics.txt') as f:
@@ -365,4 +380,3 @@ def load_data_jay_lyrics():
     vocab_size = len(char_to_idx)
     corpus_indices = [char_to_idx[char] for char in corpus_chars]
     return corpus_indices, char_to_idx, idx_to_char, vocab_size
-

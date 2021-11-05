@@ -29,6 +29,16 @@ class MyTestCase(unittest.TestCase):
                                   device, idx_to_char, char_to_idx)
         print(predict_res)
 
+        num_epochs, num_steps, batch_size, lr, clipping_theta = 250, 35, 32, 1e2, 1e-2
+        pred_period, pred_len, prefixes = 50, 50, ['分开', '不分开']
+
+        train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens,
+                              vocab_size, device, corpus_indices, idx_to_char,
+                              char_to_idx, True, num_epochs, num_steps, lr,
+                              clipping_theta, batch_size, pred_period, pred_len,
+                              prefixes)
+
+
 
 if __name__ == '__main__':
     unittest.main()

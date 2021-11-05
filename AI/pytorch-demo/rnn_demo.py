@@ -1,7 +1,12 @@
+import math
+import time
+
 from net_demo import *
 import numpy as np
+import d2lzh_pytorch as d2l
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def one_hot(x: torch.Tensor, n_class, dtype=torch.float32):
     x = x.long()
@@ -48,7 +53,7 @@ def rnn(inputs, state, params):
         outputs.append(Y)
     return outputs, (H,)
 
-# 本函数已保存在d2lzh_pytorch包中方便以后使用
+
 def predict_rnn(prefix, num_chars, rnn, params, init_rnn_state,
                 num_hiddens, vocab_size, device, idx_to_char, char_to_idx):
     state = init_rnn_state(1, num_hiddens, device)
@@ -64,3 +69,73 @@ def predict_rnn(prefix, num_chars, rnn, params, init_rnn_state,
         else:
             output.append(int(Y[0].argmax(dim=1).item()))
     return ''.join([idx_to_char[i] for i in output])
+
+
+# 裁剪梯度
+def grad_clipping(params, theta, device):
+    norm = torch.tensor([0.0], device=device)
+    for p in params:
+        norm += (p.grad.data ** 2).sum()
+    norm = norm.sqrt().item()
+    if norm > theta:
+        for p in params:
+            p.grad.data *= (theta / norm)
+
+
+def train_and_predict_rnn(rnn, gre_params, init_rnn_state, num_hiddens, vocab_size, device, corpus_indices, idx_to_char,
+                          char_to_idx, is_random_iter, num_epochs, num_steps, lr, clipping_theta, batch_size,
+                          pred_period,
+                          pred_len, prefixes):
+    if is_random_iter:
+        data_iter_fn = d2l.data_iter_random
+    else:
+        data_iter_fn = d2l.data_iter_consecutive
+    params = get_params(vocab_size)
+
+    loss = nn.CrossEntropyLoss()
+
+    for epoch in range(num_epochs):
+        # 若使用相邻采样，开始时初始化参数
+        if not is_random_iter:
+            state = init_rnn_state(batch_size, num_hiddens, device)
+        l_sum, n, start = 0.0, 0, time.time()
+        data_iter = data_iter_fn(corpus_indices, batch_size, num_steps, device)
+        for X, Y in data_iter:
+            # 随机采样，在小批量更新前初始化隐藏状态
+            if is_random_iter:
+                state = init_rnn_state(batch_size, num_hiddens, device)
+            # 否则需要使用detach函数从计算图分离隐藏状态，为了使模型参数的梯度计算只依赖一次迭代读取的小批量序列（防止梯度计算开销太大）
+            else:
+                for s in state:
+                    s.detach_()
+            inputs = to_onehot(X, vocab_size)
+            (outputs, state) = rnn(inputs, state, params)
+            # 横向拼接，2x5 cat 2x5 = 4x5
+            outputs=torch.cat(outputs,dim=0)
+            # Y的形状是(batch_size, num_steps)，转置后再变成长度为
+            # batch * num_steps 的向量，这样跟输出的行一一对应
+            y = torch.transpose(Y, 0, 1).contiguous().view(-1)
+            # 使用交叉熵损失计算平均分类误差
+            l = loss(outputs, y.long())
+
+            # 梯度清0
+            if params[0].grad is not None:
+                for param in params:
+                    param.grad.data.zero_()
+
+            l.backward()
+            # 裁剪梯度
+            grad_clipping(params,clipping_theta,device)
+            # 因为误差已经取过均值，梯度不用再做平均
+            d2l.sgd(params,lr,1)
+
+            l_sum += l.item() * y.shape[0]
+            n += y.shape[0]
+
+        if (epoch + 1) % pred_period == 0:
+            print('epoch %d, perplexity %f, time %.2f sec' % (
+                epoch + 1, math.exp(l_sum / n), time.time() - start))
+            for prefix in prefixes:
+                print(' -', predict_rnn(prefix, pred_len, rnn, params, init_rnn_state,
+                                        num_hiddens, vocab_size, device, idx_to_char, char_to_idx))
+
