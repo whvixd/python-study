@@ -1,23 +1,14 @@
+import pandas as pd
 import torch
 import torch.nn as nn
-import numpy as np
-import pandas as pd
-import d2lzh_pytorch as d2l
-import matplotlib.pyplot as plt
-import seaborn as sns
-from torch.nn import init
+from matplotlib import pyplot as plt
 
 torch.set_default_tensor_type(torch.FloatTensor)
 
 # 读取数据集
-train_data = pd.read_csv('../../test/sources/data/kaggle_house/train.csv')
-test_data = pd.read_csv('../../test/sources/data/kaggle_house/test.csv')
+train_data = pd.read_csv('../../test/sources/data/ames_house/train.csv')
+test_data = pd.read_csv('../../test/sources/data/ames_house/test.csv')
 
-# 共1460个样本和80个特征
-print(train_data.shape)  # 输出 (1460, 81)
-print(test_data.shape)  # 输出 (1460, 81)
-
-print(train_data.iloc[0:4, [0, 1, 2, 3, -3, -2, -1]])  # 后面的数组是指定输出的列
 all_features = pd.concat((train_data.iloc[:, 1:-1], test_data.iloc[:, 1:]))  # 第一列是id，不需要，训练集最后一个是标签
 
 numeric_features = all_features.dtypes[all_features.dtypes != 'object'].index
@@ -28,7 +19,6 @@ all_features[numeric_features] = all_features[numeric_features].fillna(0)
 
 # 将离散数值转变成指示特征
 all_features = pd.get_dummies(all_features, dummy_na=True)
-print(all_features.shape)  # (2919,331) --> 将字段的枚举类型单独作为一特征，所列多了
 
 # 转Numpy格式
 n_train = train_data.shape[0]
@@ -121,16 +111,21 @@ def k_fold(k, X_train, y_train, num_epochs, lr, wd, batch_size):
         train_l_sum += train_ls[-1]
         valid_l_sum += valid_ls[-1]
         if i == 0:
-            d2l.semilogy(range(1, num_epochs + 1), train_ls, 'epochs', 'rmse',
-                         range(1, num_epochs + 1), valid_ls, ['epochs', 'valid'])
-        print("fold %d: train rmse %f, valid rmse %f" % (i+1, train_ls[-1], valid_ls[-1]))
+            semilogy(range(1, num_epochs + 1), train_ls, 'epochs', 'rmse',
+                     range(1, num_epochs + 1), valid_ls, ['K_train', 'K_valid', 'train'])
+        print("fold %d: train rmse %f, valid rmse %f" % (i + 1, train_ls[-1], valid_ls[-1]))
     return train_l_sum / k, valid_l_sum / k
 
 
-k, num_epochs, lr, weight_decay, batch_size = 5, 100, 0.02, 1, 64
-
-# train_l, valid_l = k_fold(k, train_features, train_labels, num_epochs, lr, weight_decay, batch_size)
-# print('%d-fold validation: avg train rmse %f, avg valid rmse %f' % (k, train_l, valid_l))
+def semilogy(x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None,
+             legend=None, figsize=(6.5, 6.5)):
+    plt.rcParams['figure.figsize'] = figsize
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.semilogy(x_vals, y_vals)
+    if x2_vals and y2_vals:
+        plt.semilogy(x2_vals, y2_vals, linestyle=':')
+        plt.legend(legend)
 
 
 # 训练并预测房价
@@ -139,13 +134,18 @@ def train_and_pred(train_features, test_features, train_labels, test_data,
     # net为线性回归
     net = get_net(train_features.shape[1])
     train_ls, _ = train(net, train_features, train_labels, None, None, num_epochs, lr, wd, batch_size)
-    # print("parameters:", list(net.parameters()))
-    d2l.semilogy(range(1, num_epochs + 1), train_ls, 'epochs', 'rmse')
+    semilogy(range(1, num_epochs + 1), train_ls, 'epochs', 'rmse')
     print('train rmse %f' % train_ls[-1])
     pred = net(test_features).detach().numpy()  # detach() 切断向前传播，requires_grad=false
     test_data['SalePrice'] = pd.Series(pred.reshape(1, -1)[0])
-    submission = pd.concat([test_data["Id"], test_data['SalePrice']], axis=1)
-    submission.to_csv('../../test/sources/data/kaggle_house/submission.csv', index=False)
+    pred = pd.concat([test_data["Id"], test_data['SalePrice']], axis=1)
+    pred.to_csv('../../test/sources/data/ames_house/pred.csv', index=False)
 
+
+k, num_epochs, lr, weight_decay, batch_size = 5, 100, 0.02, 1, 64
+
+# K折交叉校验
+train_l, valid_l = k_fold(k, train_features, train_labels, num_epochs, lr, weight_decay, batch_size)
+print('%d-fold validation: avg train rmse %f, avg valid rmse %f' % (k, train_l, valid_l))
 
 train_and_pred(train_features, test_features, train_labels, test_data, num_epochs, lr, weight_decay, batch_size)
