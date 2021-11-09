@@ -3,6 +3,9 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 import d2lzh_pytorch as d2l
+import matplotlib.pyplot as plt
+import seaborn as sns
+from torch.nn import init
 
 torch.set_default_tensor_type(torch.FloatTensor)
 
@@ -37,10 +40,28 @@ loss = torch.nn.MSELoss()
 
 
 def get_net(feature_num):
-    net = nn.Linear(feature_num, 1)
+    num_inputs, num_outputs, num_hiddens_1, num_hiddens_2, drop_prob1, drop_prob2 = feature_num, 1, 256, 128, 0.4, 0.4
+    net = nn.Sequential(
+        FlattenLayer(),
+        nn.Linear(num_inputs, num_hiddens_1),
+        nn.ReLU(),
+        nn.Dropout(drop_prob1),
+        nn.Linear(num_hiddens_1, num_hiddens_2),
+        nn.ReLU(),
+        nn.Dropout(drop_prob2),
+        nn.Linear(num_hiddens_2, num_outputs),
+    )
     for p in net.parameters():
         nn.init.normal_(p, mean=0, std=0.01)
     return net
+
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+
+    def forward(self, x):  # x shape: (batch, *, *, ...)
+        return x.view(x.shape[0], -1)
 
 
 # 定义对数均方根误差：
@@ -105,11 +126,11 @@ def k_fold(k, X_train, y_train, num_epochs, lr, wd, batch_size):
     return train_l_sum / k, valid_l_sum / k
 
 
-k, num_epochs, lr, weight_decay, batch_size = 5, 100, 5, 0, 64
-
+k, num_epochs, lr, weight_decay, batch_size = 5, 100, 0.02, 1, 64
 
 train_l, valid_l = k_fold(k, train_features, train_labels, num_epochs, lr, weight_decay, batch_size)
 print('%d-fold validation: avg train rmse %f, avg valid rmse %f' % (k, train_l, valid_l))
+
 
 # 训练并预测房价
 def train_and_pred(train_features, test_features, train_labels, test_data,
