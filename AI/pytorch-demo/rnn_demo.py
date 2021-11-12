@@ -1,6 +1,8 @@
 import math
 import time
 
+import torch.nn
+
 from net_demo import *
 import numpy as np
 import d2lzh_pytorch as d2l
@@ -82,15 +84,14 @@ def grad_clipping(params, theta, device):
             p.grad.data *= (theta / norm)
 
 
-def train_and_predict_rnn(rnn, gre_params, init_rnn_state, num_hiddens, vocab_size, device, corpus_indices, idx_to_char,
+def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_size, device, corpus_indices, idx_to_char,
                           char_to_idx, is_random_iter, num_epochs, num_steps, lr, clipping_theta, batch_size,
-                          pred_period,
-                          pred_len, prefixes):
+                          pred_period,pred_len, prefixes):
     if is_random_iter:
         data_iter_fn = d2l.data_iter_random
     else:
         data_iter_fn = d2l.data_iter_consecutive
-    params = get_params(vocab_size)
+    params = get_params(vocab_size,num_hiddens,vocab_size)
 
     loss = nn.CrossEntropyLoss()
 
@@ -179,26 +180,26 @@ def predict_rnn_pytorch(prefix, num_chars, model, vocab_size, device, idx_to_cha
 
 
 def train_and_predict_rnn_pytorch(model, num_hiddens, vocab_size, device,
-                                corpus_indices, idx_to_char, char_to_idx,
-                                num_epochs, num_steps, lr, clipping_theta,
-                                batch_size, pred_period, pred_len, prefixes):
+                                  corpus_indices, idx_to_char, char_to_idx,
+                                  num_epochs, num_steps, lr, clipping_theta,
+                                  batch_size, pred_period, pred_len, prefixes):
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model.to(device)
     state = None
     for epoch in range(num_epochs):
         l_sum, n, start = 0.0, 0, time.time()
-        data_iter = d2l.data_iter_consecutive(corpus_indices, batch_size, num_steps, device) # 相邻采样
+        data_iter = d2l.data_iter_consecutive(corpus_indices, batch_size, num_steps, device)  # 相邻采样
         for X, Y in data_iter:
             if state is not None:
                 # 使用detach函数从计算图分离隐藏状态, 这是为了
                 # 使模型参数的梯度计算只依赖一次迭代读取的小批量序列(防止梯度计算开销太大)
-                if isinstance (state, tuple): # LSTM, state:(h, c)
+                if isinstance(state, tuple):  # LSTM, state:(h, c)
                     state = (state[0].detach(), state[1].detach())
                 else:
                     state = state.detach()
 
-            (output, state) = model(X, state) # output: 形状为(num_steps * batch_size, vocab_size)
+            (output, state) = model(X, state)  # output: 形状为(num_steps * batch_size, vocab_size)
 
             # Y的形状是(batch_size, num_steps)，转置后再变成长度为
             # batch * num_steps 的向量，这样跟输出的行一一对应
@@ -224,3 +225,47 @@ def train_and_predict_rnn_pytorch(model, num_hiddens, vocab_size, device,
                 print(' -', predict_rnn_pytorch(
                     prefix, pred_len, model, vocab_size, device, idx_to_char,
                     char_to_idx))
+
+
+# GRU
+
+def get_gru_params(num_inputs, num_hiddens, num_outputs):
+    def _one(shape):
+        ts = torch.tensor(np.random.normal(0, 0.01, size=shape), device=device, dtype=torch.float32)
+        return torch.nn.Parameter(ts, requires_grad=True)
+
+    def _three():
+        return (_one((num_inputs, num_hiddens)),
+                _one((num_hiddens, num_hiddens)),
+                torch.nn.Parameter(torch.zeros(num_hiddens, device=device, dtype=torch.float32), requires_grad=True))
+
+    W_xz, W_hz, b_z = _three()  # 更新门参数
+    W_xr, W_hr, b_r = _three()  # 重置门参数
+    W_xh, W_hh, b_h = _three()  # 候选隐藏状态参数
+
+    # 输出层参数
+    W_hq = _one((num_hiddens, num_outputs))
+    b_q = torch.nn.Parameter(torch.zeros(num_outputs, device=device, dtype=torch.float32), requires_grad=True)
+    return nn.ParameterList([W_xz, W_hz, b_z, W_xr, W_hr, b_r, W_xh, W_hh, b_h, W_hq, b_q])
+
+
+def init_gru_state(batch_size, num_hiddens, device):
+    return (torch.zeros((batch_size, num_hiddens), device=device),)
+
+
+def gru(inputs, state, params):
+    W_xz, W_hz, b_z, W_xr, W_hr, b_r, W_xh, W_hh, b_h, W_hq, b_q = params
+    H, = state
+    outputs=[]
+    for X in inputs:
+        # 更新门
+        Z = torch.sigmoid(torch.matmul(X, W_xz) + torch.matmul(H, W_hz) + b_z)
+        # 重置门
+        R = torch.sigmoid(torch.matmul(X, W_xr) + torch.matmul(H, W_hr) + b_r)
+        # 候选隐藏状态
+        H_tilda = torch.tanh(torch.matmul(X, W_xh) + torch.matmul(R * H, W_hh) + b_h)
+        # 隐藏状态
+        H = Z * H + (1 - Z) * H_tilda # 更新信号越大，记忆下来的越多；反之，遗忘的越多
+        Y=torch.matmul(H,W_hq)+b_q
+        outputs.append(Y)
+    return outputs,(H,)

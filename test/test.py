@@ -2,17 +2,20 @@ import unittest
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import torch
 
+w = torch.tensor([4], dtype=torch.float)
+b = torch.tensor([2], dtype=torch.float)
+print("w:", w)
+print("b:", b)
+w.requires_grad_(True)
+b.requires_grad_(True)
+y = w ** 2 + b ** 2
+print("y:", y)
+y.backward()  # 求梯度
+print("w':", w.grad)  # 对w求偏导 ay/aw=2w+0
+print("b':", b.grad)  # 对b求偏导 ay/aw=0+2b
 
-# 读取数据集
-train_data = pd.read_csv('../test/sources/data/kaggle_house/train.csv')
-test_data = pd.read_csv('../test/sources/data/kaggle_house/test.csv')
+w.data -= 0.02 * w.grad
 
-year_var = 'YearBuilt'
-sale_var='SalePrice'
-data = pd.concat([train_data[sale_var], train_data[year_var]], axis=1)
-print(max(train_data[year_var]))
-print(min(train_data[year_var]))
-# f, ax = plt.subplots(figsize=(26, 12))
-# fig = sns.boxplot(x=year_var, y=sale_var, data=data)
-# fig.axis(ymin=0, ymax=800000)
+print('w:', w.data)
