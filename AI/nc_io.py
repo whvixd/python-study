@@ -41,4 +41,4 @@ for i in range(7200):
     for j in range(3600):
         val_ = GPP[i][j]
         if val_ != -9999 and val_ != 0:
-            print("{:},{:}:{:}{:}".format(lon[i], lat[j], val_, unit))
+            print("lon:{:},lat:{:},val_:{:} {:}".format(lon[i], lat[j], val_, unit))
