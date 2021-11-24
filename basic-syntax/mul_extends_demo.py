@@ -15,6 +15,8 @@ class Action():
         print("do:%s" % self.action)
 
 
+
+
 class Tom(Person, Action):
     # 多继承 MRO 算法
     def __init__(self):
@@ -25,6 +27,11 @@ class Tom(Person, Action):
     def tom_action(self):
         super(Tom, self).action("running")
         super().do()
+
+    def super(cls, inst):
+        mro = inst.__class__.mro()
+        return mro[mro.index(cls) + 1]
+
 
 
 if __name__ == '__main__':
