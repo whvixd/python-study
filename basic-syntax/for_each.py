@@ -17,6 +17,7 @@ for a in a_list:
 
 b_list=[1 for i in range(10)]
 print(b_list)
+b_list.pop()
 
 # 字典的遍历，可以遍历其key和value
 b_dic = {'name': 'Tom', 'age': 22, 'score': 99}
@@ -30,6 +31,9 @@ for key in b_dic.items():
 for key, value in b_dic.items():
     print(key, value)
 
+# dict函数创建
+dic_=dict([('a',1),('b',2)])
+
 print('--test_list--')
 # 多线程可能会 出现 IndexError: no such item for Cursor instance，用迭代器
 test_list = [1, 2, 3, 4]
@@ -40,3 +44,15 @@ print('--iter--')
 it = iter(test_list)
 for index in range(len(test_list) - 1):
     print(next(it))
+
+set_={1,1,2,3,2}
+set_t=set(("长江", "黄河", "湘江"))
+
+set_co={i for i in [1,2,3,4,-1] if i>1}
+
+colors = {'red','blue','pink'}
+sizes = {36,37,38,39}
+result = {c + str(s) for c in colors for s in sizes}
+
+# zip函数转成字典
+dict_2=zip(sizes,colors)

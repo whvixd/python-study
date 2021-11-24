@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pprint
 
-hdf = SD('/Users/xxx/Downloads/MYD07_L2.A2021311.1140.061.2021312152931.hdf')
+hdf = SD('/Users/xx/Downloads/MOD17A2H.A2021313.h30v06.006.2021322082525.hdf')
 print(hdf.info())  # 信息类别数
 
 data = hdf.datasets()
@@ -12,8 +12,8 @@ for idx, sds in enumerate(data.keys()):
     print(idx, sds)
 
 # 数据获取
-# Lat = hdf.select('latitude')[:]
-# print(Lat)
+Lat = hdf.select('Gpp_500m')[:]
+print(Lat)
 # Lon = hdf.select('longitude')[:]
 # print(Lon)
 
@@ -38,7 +38,7 @@ for idx, sds in enumerate(data.keys()):
 for i in data:
     print(i)  # 具体类别
     img = hdf.select(i)[:]  # 图像数据
-
-    # hdf.select(i)[:].data.obj 数据，图像？？
+    # 数据，图像？？
+    # print(hdf.select(i)[:].data.obj)
     # plt.imshow(img, cmap='gray')  # 显示图像
     # plt.show()
