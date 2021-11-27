@@ -12,8 +12,11 @@ for idx, sds in enumerate(data.keys()):
     print(idx, sds)
 
 # 数据获取
-Lat = hdf.select('Gpp_500m')[:]
-print(Lat)
+Gpp_500m = hdf.select('Gpp_500m').get()
+# print(Gpp_500m.shape)
+# pprint.pprint(Gpp_500m.attributes())
+
+
 # Lon = hdf.select('longitude')[:]
 # print(Lon)
 
@@ -36,8 +39,8 @@ print(Lat)
 # scale_factor = attr['SCALE_FACTOR'][0]
 
 for i in data:
-    print(i)  # 具体类别
-    img = hdf.select(i)[:]  # 图像数据
+    data = hdf.select(i).get()  # 数据
+    print(str(i) + ".shape:", data.shape)
     # 数据，图像？？
     # print(hdf.select(i)[:].data.obj)
     # plt.imshow(img, cmap='gray')  # 显示图像
