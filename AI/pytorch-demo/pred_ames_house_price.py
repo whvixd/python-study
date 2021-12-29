@@ -26,22 +26,26 @@ train_features = torch.tensor(all_features[:n_train].values, dtype=torch.float)
 test_features = torch.tensor(all_features[n_train:].values, dtype=torch.float)
 train_labels = torch.tensor(train_data.SalePrice.values, dtype=torch.float).view(-1, 1)
 
-# 训练模型（线性回归+平方差损失函数）
+# 平方差损失函数
 loss = torch.nn.MSELoss()
-
 
 def get_net(feature_num):
     num_inputs, num_outputs, num_hiddens_1, num_hiddens_2, drop_prob1, drop_prob2 = feature_num, 1, 256, 128, 0.4, 0.4
+    # 定义模型
     net = nn.Sequential(
         FlattenLayer(),
+        # 线性回归
         nn.Linear(num_inputs, num_hiddens_1),
+        # 激活函数
         nn.ReLU(),
+        # 丢弃法
         nn.Dropout(drop_prob1),
         nn.Linear(num_hiddens_1, num_hiddens_2),
         nn.ReLU(),
         nn.Dropout(drop_prob2),
         nn.Linear(num_hiddens_2, num_outputs),
     )
+    # 初始化权重和偏差
     for p in net.parameters():
         nn.init.normal_(p, mean=0, std=0.01)
     return net
