@@ -8,7 +8,9 @@ import zipfile
 
 class MyTestCase(unittest.TestCase):
     def test_softmax(self):
-        print(softmax(torch.rand(2, 5)))
+        x=torch.rand(2, 5)
+        print(x)
+        print(softmax(x))
         self.assertEqual(True, True)  # add assertion here
 
     def test_exp(self):

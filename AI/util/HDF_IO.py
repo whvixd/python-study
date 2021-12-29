@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pprint
 
-hdf = SD('/Users/xx/Downloads/MOD17A2H.A2021313.h30v06.006.2021322082525.hdf')
+hdf = SD('/Users/didi/PycharmProjects/dl-gpp/sources/modis/MOD11A1.A2014226.h19v04.006.2016206155246.hdf')
 print(hdf.info())  # 信息类别数
 
 data = hdf.datasets()
 
-for idx, sds in enumerate(data.keys()):
-    print(idx, sds)
+# for idx, sds in enumerate(data.keys()):
+#     print(idx, sds)
 
 # 数据获取
-Gpp_500m = hdf.select('Gpp_500m').get()
+# Gpp_500m = hdf.select('Gpp_500m').get()
 # print(Gpp_500m.shape)
 # pprint.pprint(Gpp_500m.attributes())
 
