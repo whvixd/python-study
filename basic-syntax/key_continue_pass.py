@@ -12,6 +12,6 @@ for i in a_tuple:
     print(i)
 
 for j in a_tuple:
-    if not i:
+    if not j:
         pass  # 忽略当前的判断，不会结束循环，相当于一个占位符 什么也不做
     print(j)

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pprint
 
-hdf = SD('/Users/didi/PycharmProjects/dl-gpp/sources/modis/MOD11A1.A2014226.h19v04.006.2016206155246.hdf')
+hdf = SD('/Users/didi/Documents/whvixd/personal/studyAI/dataset/modis/MOD17A2H/MOD17A2H.A2021313.h21v03.006.2021322084625.hdf')
 print(hdf.info())  # 信息类别数
 
 data = hdf.datasets()

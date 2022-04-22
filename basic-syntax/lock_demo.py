@@ -13,7 +13,7 @@ class Account:
 
 
 # 定义一个函数来模拟取钱操作
-def draw(account, draw_amount):
+def draw(account: Account, draw_amount: int):
     account.lock.acquire()
     try:
         # 账户余额大于取钱数目

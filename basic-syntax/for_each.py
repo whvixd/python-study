@@ -15,7 +15,7 @@ a_list = [1, 3, 35, 6, 4]
 for a in a_list:
     print(a)
 
-b_list=[1 for i in range(10)]
+b_list=[i for i in range(10)]
 print(b_list)
 b_list.pop()
 
