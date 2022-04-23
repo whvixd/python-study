@@ -83,6 +83,7 @@ class MyTestCase(unittest.TestCase):
         # 深度拆分，要求矩阵的秩>=3
         c = np.arange(27).reshape(3, 3, 3)
         print(np.dsplit(c, 3))
+        np.repeat()
 
 
 if __name__ == '__main__':
