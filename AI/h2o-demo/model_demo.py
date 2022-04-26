@@ -1,5 +1,4 @@
-import csv, time, sys, pickle, h2o
-from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials
+import h2o
 
 '''
 h2o 直接用 pip安装
@@ -74,15 +73,14 @@ def dl_demo():
 
     m = H2ODeepLearningEstimator()
 
-    print('m.train_print:',m.train(x=train.names[2:],y=train.names[1],training_frame=train,validation_frame=valid))
+    print('m.train_print:', m.train(x=train.names[2:], y=train.names[1], training_frame=train, validation_frame=valid))
     print('m.train_print_end')
 
-    print('m_print:',m)
+    print('m_print:', m)
 
     # 预测
-    print('m.predict_print:\n',m.predict(test))
+    print('m.predict_print:\n', m.predict(test))
     print('m.predict_print_end')
-
 
     # 在训练数据上显示性能
     m.model_performance()
@@ -91,19 +89,19 @@ def dl_demo():
     m.model_performance(valid=True)
 
     # 评分并计算测试数据的新指标!
-    print('m.model_performance(test_data=test)_print:',m.model_performance(test_data=test))
+    print('m.model_performance(test_data=test)_print:', m.model_performance(test_data=test))
     print('m.model_performance(test_data=test)_print_end')
 
     # 训练数据的均方差
     m.mse()
 
     # 验证集上的均方差
-    print('m.mse_print:',m.mse(valid=True))
+    print('m.mse_print:', m.mse(valid=True))
 
     m.r2()
-    print('m.r2_print:',m.r2(valid=True))
+    print('m.r2_print:', m.r2(valid=True))
 
-    print('m.confusion_matrix_print:',m.confusion_matrix())
+    print('m.confusion_matrix_print:', m.confusion_matrix())
 
     # 混淆矩阵的最大精度
     m.confusion_matrix(metrics="accuracy")
