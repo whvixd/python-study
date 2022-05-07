@@ -85,6 +85,28 @@ class MyTestCase(unittest.TestCase):
         print(np.dsplit(c, 3))
         np.repeat()
 
+    def test_c_(self):
+        data=np.random.randn(10,13)
+        id=np.array(range(1,11))
+        # id=np.tile(range(1,11),253)
+        data=np.c_[data,id]
+        print(data.shape)
+        print(data)
+
+    def test_c_02(self):
+        intervals=2
+        data = np.random.randn(52258900, 2)
+        time_period=np.tile(range(1, 3), (int)(data.shape[0] / intervals))
+        assert len(time_period) == data.shape[0]
+
+    def test_save(self):
+        data=np.random.randn(3,3)
+        print(data)
+        np.save('./data.npy',data)
+
+    def test_load(self):
+        data=np.load('./data.npy')
+        print(data)
 
 if __name__ == '__main__':
     unittest.main()

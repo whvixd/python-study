@@ -79,6 +79,26 @@ class MyTestCase(unittest.TestCase):
         # 将Series转化成DataFrame
         df=data.unstack()
 
+    def test_shift(self):
+        lags = ["B1", "B2", "B3", "B4", "B5", "B6", "B7"]
+        data=np.array([[1,2,3,4,1],
+                       [2,5,6,5,1],
+                       [3,8,9,6,1]])
+        df=pd.DataFrame(data,columns=['id','b1','b2','EVI','NDVI'])
+
+        df.b1=df.b1.shift(1)
+        df.b2=df.b2.shift(1)
+        df['EVI_lag'] = df.EVI.shift(1)
+
+        coln = df.columns
+        new = [var + '_lag' if var in lags else var for var in coln]
+        assert len(df.columns) == len(new)
+        df.columns = new
+        df.drop('NDVI', axis=1, inplace=True)
+
+        df.to_csv('./test.csv', header=True, index=False)
+
+
 
 if __name__ == '__main__':
     unittest.main()
