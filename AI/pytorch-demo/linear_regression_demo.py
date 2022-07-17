@@ -5,6 +5,7 @@ from d2lzh_pytorch import *
 import torch
 from matplotlib import pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 def __f1__():
@@ -139,6 +140,78 @@ def __f2__():
         print(true_w, dense.weight)
         print(true_b, dense.bias)
 
+def __f4__():
+    dataset=pd.read_csv("/Users/whvixd/Documents/individual/MODIS/dataset/SL/spectral/h2o_data_withMissingS",header=0)
+
+    num_inputs=5
+    features_co=dataset.columns[0:5]
+    features=torch.tensor(dataset[features_co].values,dtype=torch.float)
+    labels=torch.tensor(dataset['B7_lag'].values,dtype=torch.float)
+
+    # 1.读取数据
+    import torch.utils.data as Data
+    batch_size = 100
+    # 将训练数据的特征和标签组合
+    dataset = Data.TensorDataset(features, labels)
+    # 随机读取小批量
+    data_iter = Data.DataLoader(dataset, batch_size, shuffle=True)
+
+    net=Net(num_inputs,30,30,1)
+    print(net)
+
+    net = nn.Sequential(
+        nn.Linear(num_inputs, 1)
+        # 此处还可以传入其他层
+    )
+
+    for param in net.parameters():
+        print(param)
+
+    # 3.初始化模型参数
+    from torch.nn import init
+
+    init.normal_(net[0].weight, mean=0, std=0.01)
+    init.constant_(net[0].bias, val=0)  # 也可以直接修改bias的data: net[0].bias.data.fill_(0)
+
+    # 定义损失函数
+    loss = nn.MSELoss()
+
+    # 定义优化算法
+    import torch.optim as optim
+
+    optimizer = optim.SGD(net.parameters(), lr=0.03)
+    print(optimizer)
+
+    num_epochs = 50
+    for epoch in range(1, num_epochs + 1):
+        for X, y in data_iter:
+            output = net(X)
+            l = loss(output, y.view(-1, 1))
+            l.backward()
+            optimizer.step()
+            optimizer.zero_grad()  # 梯度清零，等价于net.zero_grad()
+        print('epoch %d, loss: %f' % (epoch, l.item()))
+
+        dense = net[0]
+        print("----")
+        print(dense.weight)
+        print(dense.bias)
+
+
+
+class Net(torch.nn.Module):
+    def __init__(self,n_features,n_hidden_1,n_hidden_2,n_output): #构造函数
+        #构造函数里面的三个参数分别为，输入，中间隐藏层处理，以及输出层
+        super(Net,self).__init__() #官方步骤
+        self.l1=torch.nn.Linear(n_features, n_hidden_1)
+        self.l2=torch.nn.Linear(n_hidden_1,n_hidden_2)
+        self.l3=torch.nn.Linear(n_hidden_2,n_output)
+
+    def forward(self,x):  #搭建的第一个前层反馈神经网络  向前传递
+        x = F.relu(self.l1(x))# 激活函数，直接调用torch.nn.functional中集成好的Relu
+        x=F.relu(self.l2(x))
+        x = self.l3(x)  #此行可预测也可以不预测
+        return x
 
 class LinearNet(nn.Module):
     def __init__(self, n_feature):
@@ -150,5 +223,7 @@ class LinearNet(nn.Module):
         y = self.linear(x)
         return y
 
+
+
 if __name__ == '__main__':
-    __f1__()
+    __f4__()
