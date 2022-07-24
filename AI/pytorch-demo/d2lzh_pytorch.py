@@ -285,10 +285,9 @@ def evaluate_accuracy(data_iter, net, device=None):
     return acc_sum / n
 
 
-def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs):
+def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs,loss=torch.nn.CrossEntropyLoss()):
     net = net.to(device)
     print("training on ", device)
-    loss = torch.nn.CrossEntropyLoss()
     for epoch in range(num_epochs):
         train_l_sum, train_acc_sum, n, batch_count, start = 0.0, 0.0, 0, 0, time.time()
         for X, y in train_iter:
