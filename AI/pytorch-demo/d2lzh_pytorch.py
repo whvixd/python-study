@@ -138,23 +138,23 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, batch_size,
     for epoch in range(num_epochs):
         train_l_sum, train_acc_sum, n = 0.0, 0.0, 0
         for X, y in train_iter:
-            y_hat = net(X)
-            l = loss(y_hat, y).sum()
+            y_hat = net(X)                                          # 获取y的预测值
+            l = loss(y_hat, y).sum()                                # 与真实值比较差值
 
-            # 梯度清零
+                                                                    # 梯度清零
             if optimizer is not None:
                 optimizer.zero_grad()
             elif params is not None and params[0].grad is not None:
                 for param in params:
                     param.grad.data.zero_()
 
-            l.backward()
+            l.backward()                                            # 优化算法，寻求最优解
             if optimizer is None:
                 sgd(params, lr, batch_size)
             else:
                 optimizer.step()  # “softmax回归的简洁实现”一节将用到
 
-            train_l_sum += l.item()
+            train_l_sum += l.item()                                 # 损失差值之和
             train_acc_sum += (y_hat.argmax(dim=1) == y).sum().item()
             n += y.shape[0]
         test_acc = evaluate_accuracy(test_iter, net)
@@ -289,14 +289,14 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
     net = net.to(device)
     print("training on ", device)
     for epoch in range(num_epochs):
-        train_l_sum, train_acc_sum, n, batch_count, start = 0.0, 0.0, 0, 0, time.time()
+        train_l_sum, train_acc_sum, n, batch_count, start_time = 0.0, 0.0, 0, 0, time.time()
         for X, y in train_iter:
             # print("training...start,epoch:", epoch)
             # print("X.shape: ", X.shape)
             # print("y.shape: ", y.shape)
             X = X.to(device)
             y = y.to(device)
-            y_hat = net(X)
+            y_hat = net(X)  # y'
             l = loss(y_hat, y)
             optimizer.zero_grad()
             l.backward()
@@ -308,7 +308,7 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
             # print("training...end,epoch:", epoch)
         test_acc = evaluate_accuracy(test_iter, net)
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
-              % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
+              % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start_time))
 
 
 def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNIST'):
