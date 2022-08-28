@@ -118,7 +118,7 @@ class CNN_conv1d(nn.Module):
         self.linear2 = nn.Linear(in_features=25, out_features=1)  # 预测下一时刻的数据
 
     def forward(self, x):
-        x = self.conv1(x) # [batch_size, in_channels, in_size]
+        x = self.conv1(x)  # [batch_size, in_channels, in_size]
         x = self.conv2(x)
         x = x.view(-1)
         x = self.linear1(x)
@@ -126,3 +126,49 @@ class CNN_conv1d(nn.Module):
         x = self.linear2(x)
         x = x.view(x.shape[0], -1)
         return x
+
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+
+    def forward(self, x):  # x shape: (batch, *, *, ...)
+        return x.view(x.shape[0], -1)
+
+
+class CNN_conv2d(nn.Module):
+    def __init__(self):
+        super(CNN_conv2d, self).__init__()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(in_channels=7, out_channels=15, kernel_size=3),
+            nn.BatchNorm2d(15),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3)
+        )
+
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(in_channels=15, out_channels=31, kernel_size=3),
+            nn.BatchNorm2d(31),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3)
+        )
+
+        # https://www.cnblogs.com/douzujun/p/13366939.html
+        self.linear = nn.Sequential(
+            FlattenLayer(),
+            nn.Linear(in_features=31*11*11, out_features=64),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+
+            nn.Linear(in_features=64, out_features=32),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(in_features=32, out_features=1) # 输出后的y和真实值对比（对于需要hXw 如何处理）
+        )
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        print(x.shape)
+        y = self.linear(x)
+        return y

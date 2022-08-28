@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
         print("output.shape:", output.shape)
         print("output:", output)
 
-    def test_cnn(self):
+    def test_cnn_1d(self):
         input = torch.randn(20, 7)
         print(input.shape)
         # 扩充一维，作为batch_size
@@ -30,6 +30,14 @@ class MyTestCase(unittest.TestCase):
         print(input.shape)
 
         model = CNN_conv1d()
+        output = model.forward(input)
+        print(output)
+
+    def test_cnn_2d(self):
+        input = torch.randn(1, 7, 111, 110) # (batch_size,channel,h,w)
+        print(input.shape)
+
+        model = CNN_conv2d()
         output = model.forward(input)
         print(output)
 
