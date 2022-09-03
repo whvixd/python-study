@@ -46,7 +46,7 @@ class MyTestCase(unittest.TestCase):
         output = model.forward(input)
         print(output)
 
-    def test_cnn_time(self):
+    def test_cnn_single_time(self):
         train_seq = [i for i in range(20)]
         seq_time = 3
         feature = 1
@@ -61,7 +61,7 @@ class MyTestCase(unittest.TestCase):
         # print(train_seq.shape)
 
         np_X, np_y = data_process_util.split_seq(train_seq, seq_time)
-        model = CNN_conv1d_time_seq()
+        model = CNN_conv1d_single_var_seq()
 
         criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters(), lr=0.002)

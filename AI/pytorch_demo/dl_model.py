@@ -128,9 +128,9 @@ class CNN_conv1d(nn.Module):
         return x
 
 
-class CNN_conv1d_time_seq(nn.Module):
+class CNN_conv1d_single_var_seq(nn.Module):
     def __init__(self):
-        super(CNN_conv1d_time_seq, self).__init__()
+        super(CNN_conv1d_single_var_seq, self).__init__()
         self.relu = nn.ReLU(inplace=True)
         # 如果是20个时刻的7特征数据
 
