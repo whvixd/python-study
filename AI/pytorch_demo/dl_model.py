@@ -128,6 +128,35 @@ class CNN_conv1d(nn.Module):
         return x
 
 
+class CNN_conv1d_time_seq(nn.Module):
+    def __init__(self):
+        super(CNN_conv1d_time_seq, self).__init__()
+        self.relu = nn.ReLU(inplace=True)
+        # 如果是20个时刻的7特征数据
+
+        self.conv1 = nn.Sequential(
+            # 卷积后20-2+1=19
+            nn.Conv1d(in_channels=1, out_channels=5, kernel_size=2),
+            nn.ReLU(),
+            # 卷积后19-2+1=18
+            nn.MaxPool1d(kernel_size=2, stride=1)
+        )
+
+        self.linear = nn.Sequential(
+            nn.Linear(in_features=5, out_features=25),
+            nn.ReLU(),
+            nn.Linear(in_features=25, out_features=1),
+        )
+
+    def forward(self, x):
+        x = self.conv1(x)  # [batch_size, in_channels, in_size]
+        # x = self.conv2(x)
+        x = x.view(-1)
+        x = self.linear(x)
+        x = x.view(x.shape[0], -1)
+        return x
+
+
 class FlattenLayer(nn.Module):
     def __init__(self):
         super(FlattenLayer, self).__init__()
@@ -156,14 +185,14 @@ class CNN_conv2d(nn.Module):
         # https://www.cnblogs.com/douzujun/p/13366939.html
         self.linear = nn.Sequential(
             FlattenLayer(),
-            nn.Linear(in_features=31*11*11, out_features=64),
+            nn.Linear(in_features=31 * 11 * 11, out_features=64),
             nn.ReLU(),
             nn.Dropout(0.4),
 
             nn.Linear(in_features=64, out_features=32),
             nn.ReLU(),
             nn.Dropout(0.4),
-            nn.Linear(in_features=32, out_features=1) # 输出后的y和真实值对比（对于需要hXw 如何处理）
+            nn.Linear(in_features=32, out_features=1)  # 输出后的y和真实值对比（对于需要hXw 如何处理）
         )
 
     def forward(self, x):

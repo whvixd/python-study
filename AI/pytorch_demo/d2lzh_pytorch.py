@@ -382,3 +382,21 @@ def load_data_jay_lyrics():
     corpus_indices = [char_to_idx[char] for char in corpus_chars]
     return corpus_indices, char_to_idx, idx_to_char, vocab_size
 
+from torch.utils.data import DataLoader, Dataset
+
+class TorchDataset(Dataset):
+
+    def __init__(self, xx, yy, transform=None):
+        self.x = xx
+        self.y = yy
+        self.transform = transform
+
+    def __getitem__(self, index):
+        x1 = self.x[index]
+        y1 = self.y[index]
+        if self.transform != None:
+            return self.transform(x1), y1
+        return x1, y1
+
+    def __len__(self):
+        return len(self.x)

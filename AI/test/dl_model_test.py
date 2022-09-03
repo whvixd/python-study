@@ -1,6 +1,11 @@
 import unittest
-
-from .. pytorch_demo .dl_model import *
+from torch.utils.data import DataLoader, Dataset
+from torch.autograd import Variable
+import torch.optim as optim
+from ..pytorch_demo.dl_model import *
+from ..pytorch_demo.d2lzh_pytorch import *
+from ..util import data_process_util
+import numpy as np
 
 
 class MyTestCase(unittest.TestCase):
@@ -34,7 +39,7 @@ class MyTestCase(unittest.TestCase):
         print(output)
 
     def test_cnn_2d(self):
-        input = torch.randn(1, 7, 111, 110) # (batch_size,channel,h,w)
+        input = torch.randn(1, 7, 111, 110)  # (batch_size,channel,h,w)
         print(input.shape)
 
         model = CNN_conv2d()
@@ -42,15 +47,55 @@ class MyTestCase(unittest.TestCase):
         print(output)
 
     def test_cnn_time(self):
-        train_seq=[i for i in range(20)]
-        seq_time=3
-        feature=1
+        train_seq = [i for i in range(20)]
+        seq_time = 3
+        feature = 1
 
-        for i in range(len(train_seq)-seq_time):
-            train_x=train_seq[i:i+seq_time]
-            train_x=train_seq[i+seq_time:i+seq_time+1]
+        train_seq = np.array(train_seq, dtype=np.float32).reshape(len(train_seq), 1)
+
+        # 加了归一化模型效果还较差
+        # 标准化处理，加速收敛
+        # from sklearn.preprocessing import MinMaxScaler
+        # scaler = MinMaxScaler(feature_range=(0, 2))
+        # train_seq = scaler.fit_transform(train_seq)  # 输入数据结构二维 (n,1)
+        # print(train_seq.shape)
+
+        np_X, np_y = data_process_util.split_seq(train_seq, seq_time)
+        model = CNN_conv1d_time_seq()
+
+        criterion = nn.MSELoss()
+        optimizer = optim.Adam(model.parameters(), lr=0.002)
+        train_dataset = TorchDataset(np_X, np_y)
+        train_loader = DataLoader(dataset=train_dataset)
+
+        for i in range(100):
+            total_loss = 0
+            for index, (input, label) in enumerate(train_loader):
+                # input = input.unsqueeze(0)
+                input = input.permute(0, 2, 1)
+                pred = model(Variable(input))
+
+                label=label.squeeze(1)
+                loss = criterion(pred, label)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+
+            print("epoch:%d,loss=%f" % (i, total_loss))
 
 
+#         预测
+        model.eval()
+        test_X=[30,31,32]
+        np_X=np.array(test_X,dtype=np.float32).reshape(1,3)
+        input_X=torch.from_numpy(np_X)
+
+        input_X=input_X.unsqueeze(0)
+
+        pre=model(Variable(input_X))
+        pre_rest=pre.data.squeeze(1)
+        print(pre_rest)
 
 
 if __name__ == '__main__':

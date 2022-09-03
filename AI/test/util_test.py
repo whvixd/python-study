@@ -10,7 +10,7 @@ class MyTestCase(unittest.TestCase):
     def test_split_seq(self):
         data=[i for i in range(20)]
 
-        np_X, np_y=data_process_util.split_seq(data,5)
+        np_X, np_y=data_process_util.split_seq(data,3)
         print(np_X)
         print(np_y)
 

@@ -62,6 +62,25 @@ class MyTestCase(unittest.TestCase):
         # 转置
         print(b.transpose())
 
+    def test_ranspose(self):
+        a=np.random.randn(1,3)
+
+
+        # print(a.shape)
+        print(a.transpose().shape)
+
+        train_seq = [i for i in range(20)]
+        seq_time = 3
+        feature = 1
+
+        train_seq = np.array(train_seq, dtype=np.float32)
+        train_seq=train_seq.reshape(20,1)
+        print(train_seq)
+
+
+        train_seq = train_seq.transpose()
+        print(train_seq.shape)
+
     def test_stack(self):
         a = np.arange(9).reshape(3, 3)
         b = a * 2
