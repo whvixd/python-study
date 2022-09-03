@@ -1,6 +1,7 @@
 import time
 import zipfile
 
+import numpy
 from IPython import display
 from matplotlib import pyplot as plt
 import random
@@ -380,3 +381,4 @@ def load_data_jay_lyrics():
     vocab_size = len(char_to_idx)
     corpus_indices = [char_to_idx[char] for char in corpus_chars]
     return corpus_indices, char_to_idx, idx_to_char, vocab_size
+

@@ -1,6 +1,6 @@
 import unittest
 
-from dl_model import *
+from .. pytorch_demo .dl_model import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -40,6 +40,17 @@ class MyTestCase(unittest.TestCase):
         model = CNN_conv2d()
         output = model.forward(input)
         print(output)
+
+    def test_cnn_time(self):
+        train_seq=[i for i in range(20)]
+        seq_time=3
+        feature=1
+
+        for i in range(len(train_seq)-seq_time):
+            train_x=train_seq[i:i+seq_time]
+            train_x=train_seq[i+seq_time:i+seq_time+1]
+
+
 
 
 if __name__ == '__main__':
